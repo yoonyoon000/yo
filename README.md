@@ -30,7 +30,6 @@ src/assets/stickers/
   v-sign.png
   head-pat.png
   hand-heart.png
-  chin-pose.png
   waving-hand.png
   cheek-poke.png
   face-frame.png
@@ -45,7 +44,6 @@ src/assets/stickers/
 브이.png -> v-sign.png
 쓰담.png -> head-pat.png
 볼하트.png -> hand-heart.png
-받침.png -> chin-pose.png
 하이.png -> waving-hand.png
 볼콕.png -> cheek-poke.png
 꽃받침.png -> face-frame.png
