@@ -475,8 +475,12 @@ export default function Editor({ imageFile, onChangeImage }) {
     if (!stage || !uploadedImage) return;
 
     const exportScale = Math.max(uploadedImage.width / canvasSize.width, 1);
-    const rawUrl = stage.toDataURL({ pixelRatio: exportScale, mimeType: 'image/png' });
-    downloadDataUrl(rawUrl, 'sseudam-photobooth.png');
+    const rawUrl = stage.toDataURL({
+      pixelRatio: exportScale,
+      mimeType: 'image/jpeg',
+      quality: 1,
+    });
+    downloadDataUrl(rawUrl, 'sseudam-photobooth.jpg');
   };
 
   const handleTouchStart = (event) => {
