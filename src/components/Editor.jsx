@@ -1,6 +1,6 @@
 import Konva from 'konva';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Circle, Group, Image as KonvaImage, Layer, Rect, Stage, Star, Text, Transformer } from 'react-konva';
+import { Group, Image as KonvaImage, Layer, Path, Rect, Stage, Star, Text, Transformer } from 'react-konva';
 import StickerPanel from './StickerPanel.jsx';
 import Toolbar from './Toolbar.jsx';
 
@@ -256,9 +256,15 @@ function EffectNode({ item, onSelect, onChange }) {
 
   return (
     <Group {...commonProps}>
-      <Circle radius={22} fill="#ff8fb3" shadowColor="#fa8bad" shadowBlur={10} />
-      <Circle x={-15} y={-8} radius={18} fill="#ff8fb3" />
-      <Circle x={15} y={-8} radius={18} fill="#ff8fb3" />
+      <Path
+        data="M 0 30 C -28 8 -45 -10 -35 -29 C -27 -44 -8 -40 0 -24 C 8 -40 27 -44 35 -29 C 45 -10 28 8 0 30 Z"
+        fill="#ff7fa8"
+        stroke="#d85f82"
+        strokeWidth={2}
+        shadowColor="#ff9ab8"
+        shadowBlur={10}
+        shadowOpacity={0.5}
+      />
     </Group>
   );
 }
