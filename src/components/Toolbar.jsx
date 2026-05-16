@@ -1,6 +1,4 @@
 import {
-  ArrowDownToLine,
-  ArrowUpToLine,
   Download,
   FlipHorizontal,
   ImageUp,
@@ -13,7 +11,6 @@ export default function Toolbar({
   canEditSelected,
   imageBlur,
   imageBrightness,
-  onBackLayer,
   onChangeBlur,
   onChangeBrightness,
   onChangeImage,
@@ -21,7 +18,6 @@ export default function Toolbar({
   onDelete,
   onDownload,
   onFlip,
-  onForwardLayer,
   onUndo,
 }) {
   return (
@@ -41,12 +37,6 @@ export default function Toolbar({
       <div className="toolbar-group edit-actions">
         <button type="button" className="icon-button" onClick={onFlip} disabled={!canEditSelected} title="좌우반전">
           <FlipHorizontal size={18} />
-        </button>
-        <button type="button" className="icon-button" onClick={onForwardLayer} disabled={!canEditSelected} title="앞으로 보내기">
-          <ArrowUpToLine size={18} />
-        </button>
-        <button type="button" className="icon-button" onClick={onBackLayer} disabled={!canEditSelected} title="뒤로 보내기">
-          <ArrowDownToLine size={18} />
         </button>
         <button type="button" className="icon-button danger" onClick={onDelete} disabled={!canEditSelected} title="삭제">
           <Trash2 size={18} />

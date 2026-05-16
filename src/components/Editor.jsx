@@ -453,19 +453,6 @@ export default function Editor({ imageFile, onChangeImage }) {
     updateItem({ ...selectedItem, flipped: !selectedItem.flipped });
   };
 
-  const moveSelectedLayer = (direction) => {
-    if (!selectedItem) return;
-    snapshot();
-    setItems((prev) => {
-      const index = prev.findIndex((item) => item.id === selectedId);
-      const nextIndex = direction === 'forward' ? Math.min(index + 1, prev.length - 1) : Math.max(index - 1, 0);
-      const copy = [...prev];
-      const [target] = copy.splice(index, 1);
-      copy.splice(nextIndex, 0, target);
-      return copy;
-    });
-  };
-
   const downloadDataUrl = (dataUrl, fileName) => {
     const link = document.createElement('a');
     link.download = fileName;
@@ -545,7 +532,6 @@ export default function Editor({ imageFile, onChangeImage }) {
         canEditSelected={Boolean(selectedItem)}
         imageBlur={blur}
         imageBrightness={brightness}
-        onBackLayer={() => moveSelectedLayer('back')}
         onChangeBlur={setBlur}
         onChangeBrightness={setBrightness}
         onChangeImage={onChangeImage}
@@ -553,7 +539,6 @@ export default function Editor({ imageFile, onChangeImage }) {
         onDelete={deleteSelected}
         onDownload={downloadImage}
         onFlip={flipSelected}
-        onForwardLayer={() => moveSelectedLayer('forward')}
         onUndo={undo}
       />
 
