@@ -30,7 +30,6 @@ export default function StickerPanel({ onAddSticker, onAddEffect }) {
         <div className="effect-buttons">
           <button type="button" onClick={() => onAddEffect('heart')}>하트 추가</button>
           <button type="button" onClick={() => onAddEffect('sparkle')}>반짝이 추가</button>
-          <button type="button" onClick={() => onAddEffect('bubble')}>말풍선 추가</button>
         </div>
       </div>
     </aside>

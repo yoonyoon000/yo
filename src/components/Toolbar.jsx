@@ -11,7 +11,6 @@ import {
 
 export default function Toolbar({
   canEditSelected,
-  includeWatermark,
   imageBlur,
   imageBrightness,
   onBackLayer,
@@ -23,7 +22,6 @@ export default function Toolbar({
   onDownload,
   onFlip,
   onForwardLayer,
-  onToggleWatermark,
   onUndo,
 }) {
   return (
@@ -75,13 +73,6 @@ export default function Toolbar({
             value={imageBlur}
             onChange={(event) => onChangeBlur(Number(event.target.value))}
           />
-        </label>
-      </div>
-
-      <div className="toolbar-group options">
-        <label className="check-control">
-          <input type="checkbox" checked={includeWatermark} onChange={onToggleWatermark} />
-          날짜/로고
         </label>
       </div>
 

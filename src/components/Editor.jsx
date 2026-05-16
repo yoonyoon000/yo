@@ -113,23 +113,70 @@ function useStickerImage(src) {
   return useLoadedImage(processedSrc);
 }
 
-function EditableImage({ image, width, height, brightness, blur }) {
+function clampNumber(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function clampImageTransform(transform, canvasSize) {
+  const scale = clampNumber(transform.scale, 1, 4);
+  const minX = canvasSize.width - canvasSize.width * scale;
+  const minY = canvasSize.height - canvasSize.height * scale;
+
+  return {
+    scale,
+    x: clampNumber(transform.x, minX, 0),
+    y: clampNumber(transform.y, minY, 0),
+  };
+}
+
+function getTouchInfo(stage, touches) {
+  const rect = stage.container().getBoundingClientRect();
+  const first = touches[0];
+  const second = touches[1];
+  const firstPoint = {
+    x: first.clientX - rect.left,
+    y: first.clientY - rect.top,
+  };
+  const secondPoint = {
+    x: second.clientX - rect.left,
+    y: second.clientY - rect.top,
+  };
+
+  return {
+    center: {
+      x: (firstPoint.x + secondPoint.x) / 2,
+      y: (firstPoint.y + secondPoint.y) / 2,
+    },
+    distance: Math.hypot(firstPoint.x - secondPoint.x, firstPoint.y - secondPoint.y),
+  };
+}
+
+function EditableImage({ image, width, height, brightness, blur, transform }) {
   const imageRef = useRef(null);
+  const hasFilters = brightness !== 100 || blur > 0;
 
   useEffect(() => {
     if (!imageRef.current) return;
-    imageRef.current.cache();
+    if (hasFilters) {
+      imageRef.current.cache({ pixelRatio: 2 });
+    } else {
+      imageRef.current.clearCache();
+    }
     imageRef.current.getLayer()?.batchDraw();
-  }, [image, brightness, blur, width, height]);
+  }, [hasFilters, image, brightness, blur, width, height]);
 
   return (
     <KonvaImage
       ref={imageRef}
       name="background"
       image={image}
+      x={transform.x}
+      y={transform.y}
       width={width}
       height={height}
-      filters={[Konva.Filters.Brighten, Konva.Filters.Blur]}
+      scaleX={transform.scale}
+      scaleY={transform.scale}
+      filters={hasFilters ? [Konva.Filters.Brighten, Konva.Filters.Blur] : []}
       brightness={(brightness - 100) / 100}
       blurRadius={blur}
     />
@@ -245,15 +292,6 @@ function EffectNode({ item, onSelect, onChange }) {
     );
   }
 
-  if (item.effectType === 'bubble') {
-    return (
-      <Group {...commonProps}>
-        <Rect width={210} height={82} offsetX={105} offsetY={41} cornerRadius={22} fill="#ffffff" stroke="#f0a6ba" strokeWidth={3} />
-        <Text text={item.text} width={180} offsetX={90} offsetY={18} x={0} y={0} align="center" fontSize={20} fill="#4f343d" fontStyle="bold" />
-      </Group>
-    );
-  }
-
   return (
     <Group {...commonProps}>
       <Path
@@ -280,7 +318,8 @@ export default function Editor({ imageFile, onChangeImage }) {
   const [selectedId, setSelectedId] = useState(null);
   const [brightness, setBrightness] = useState(100);
   const [blur, setBlur] = useState(0);
-  const [includeWatermark, setIncludeWatermark] = useState(true);
+  const [imageTransform, setImageTransform] = useState({ x: 0, y: 0, scale: 1 });
+  const pinchRef = useRef(null);
 
   useEffect(() => () => URL.revokeObjectURL(imageUrl), [imageUrl]);
 
@@ -295,6 +334,11 @@ export default function Editor({ imageFile, onChangeImage }) {
       height: Math.round(uploadedImage.height * ratio),
     };
   }, [uploadedImage, viewportSize.height, viewportSize.width]);
+
+  useEffect(() => {
+    setImageTransform({ x: 0, y: 0, scale: 1 });
+    pinchRef.current = null;
+  }, [imageFile, canvasSize.height, canvasSize.width]);
 
   const selectedItem = items.find((item) => item.id === selectedId);
 
@@ -356,18 +400,14 @@ export default function Editor({ imageFile, onChangeImage }) {
   };
 
   const addEffect = (effectType) => {
-    const text = effectType === 'bubble' ? window.prompt('말풍선에 넣을 문구를 입력하세요.', '오늘도 예쁨') : '';
-    if (effectType === 'bubble' && text === null) return;
-
     snapshot();
     const nextItem = {
       id: crypto.randomUUID(),
       type: 'effect',
       effectType,
-      text: text || '',
       x: canvasSize.width * 0.58,
       y: canvasSize.height * 0.34,
-      rotation: effectType === 'bubble' ? -4 : 8,
+      rotation: 8,
       scaleX: 1,
       scaleY: 1,
     };
@@ -388,6 +428,7 @@ export default function Editor({ imageFile, onChangeImage }) {
     setSelectedId(null);
     setBrightness(100);
     setBlur(0);
+    setImageTransform({ x: 0, y: 0, scale: 1 });
   };
 
   const undo = () => {
@@ -426,52 +467,72 @@ export default function Editor({ imageFile, onChangeImage }) {
     link.click();
   };
 
-  const drawWatermark = (context, width, height) => {
-    if (!includeWatermark) return;
-    const date = new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium' }).format(new Date());
-    context.fillStyle = 'rgba(255,255,255,0.82)';
-    context.fillRect(24, height - 58, 250, 34);
-    context.fillStyle = '#9b5268';
-    context.font = '600 18px Arial';
-    context.fillText(`쓰담 포토부스 · ${date}`, 38, height - 35);
-  };
-
   const downloadImage = async () => {
     setSelectedId(null);
     await new Promise((resolve) => requestAnimationFrame(resolve));
 
     const stage = stageRef.current;
-    if (!stage) return;
-    const rawUrl = stage.toDataURL({ pixelRatio: 2, mimeType: 'image/png' });
+    if (!stage || !uploadedImage) return;
 
-    if (!includeWatermark) {
-      downloadDataUrl(rawUrl, 'sseudam-photobooth.png');
+    const exportScale = Math.max(uploadedImage.width / canvasSize.width, 1);
+    const rawUrl = stage.toDataURL({ pixelRatio: exportScale, mimeType: 'image/png' });
+    downloadDataUrl(rawUrl, 'sseudam-photobooth.png');
+  };
+
+  const handleTouchStart = (event) => {
+    const touches = event.evt.touches;
+    if (touches.length < 2) return;
+
+    event.evt.preventDefault();
+    setSelectedId(null);
+    const stage = stageRef.current;
+    if (!stage) return;
+    pinchRef.current = getTouchInfo(stage, touches);
+  };
+
+  const handleTouchMove = (event) => {
+    const touches = event.evt.touches;
+    if (touches.length < 2) {
+      pinchRef.current = null;
       return;
     }
 
-    const exportImage = new Image();
-    exportImage.onload = () => {
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      const width = exportImage.width;
-      const height = exportImage.height;
-      canvas.width = width;
-      canvas.height = height;
-      context.fillStyle = '#f8f4ef';
-      context.fillRect(0, 0, width, height);
+    event.evt.preventDefault();
+    const stage = stageRef.current;
+    if (!stage) return;
 
-      context.drawImage(exportImage, 0, 0);
-      drawWatermark(context, width, height);
-      downloadDataUrl(canvas.toDataURL('image/png'), 'sseudam-photobooth.png');
-    };
-    exportImage.src = rawUrl;
+    const touchInfo = getTouchInfo(stage, touches);
+    const previousTouchInfo = pinchRef.current ?? touchInfo;
+
+    setImageTransform((currentTransform) => {
+      const scaleBy = touchInfo.distance / previousTouchInfo.distance;
+      const nextScale = clampNumber(currentTransform.scale * scaleBy, 1, 4);
+      const focusPoint = {
+        x: (previousTouchInfo.center.x - currentTransform.x) / currentTransform.scale,
+        y: (previousTouchInfo.center.y - currentTransform.y) / currentTransform.scale,
+      };
+      const nextTransform = {
+        scale: nextScale,
+        x: touchInfo.center.x - focusPoint.x * nextScale,
+        y: touchInfo.center.y - focusPoint.y * nextScale,
+      };
+
+      return clampImageTransform(nextTransform, canvasSize);
+    });
+
+    pinchRef.current = touchInfo;
+  };
+
+  const handleTouchEnd = (event) => {
+    if (event.evt.touches.length < 2) {
+      pinchRef.current = null;
+    }
   };
 
   return (
     <section className="editor-screen">
       <Toolbar
         canEditSelected={Boolean(selectedItem)}
-        includeWatermark={includeWatermark}
         imageBlur={blur}
         imageBrightness={brightness}
         onBackLayer={() => moveSelectedLayer('back')}
@@ -483,7 +544,6 @@ export default function Editor({ imageFile, onChangeImage }) {
         onDownload={downloadImage}
         onFlip={flipSelected}
         onForwardLayer={() => moveSelectedLayer('forward')}
-        onToggleWatermark={() => setIncludeWatermark((prev) => !prev)}
         onUndo={undo}
       />
 
@@ -498,13 +558,23 @@ export default function Editor({ imageFile, onChangeImage }) {
                 if (event.target === event.target.getStage() || event.target.name() === 'background') setSelectedId(null);
               }}
               onTouchStart={(event) => {
+                handleTouchStart(event);
                 if (event.target === event.target.getStage() || event.target.name() === 'background') setSelectedId(null);
               }}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
               <Layer>
                 <Rect name="background" width={canvasSize.width} height={canvasSize.height} fill="#ffffff" />
                 {uploadedImage && (
-                  <EditableImage image={uploadedImage} width={canvasSize.width} height={canvasSize.height} brightness={brightness} blur={blur} />
+                  <EditableImage
+                    image={uploadedImage}
+                    width={canvasSize.width}
+                    height={canvasSize.height}
+                    brightness={brightness}
+                    blur={blur}
+                    transform={imageTransform}
+                  />
                 )}
                 {items.map((item) =>
                   item.type === 'sticker' ? (

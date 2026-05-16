@@ -225,6 +225,11 @@ button {
   overflow: hidden;
 }
 
+.canvas-card,
+.konvajs-content canvas {
+  touch-action: none;
+}
+
 .sticker-panel {
   display: grid;
   grid-template-rows: auto auto;
@@ -300,7 +305,7 @@ button {
 
 .effect-buttons {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
 }
 
