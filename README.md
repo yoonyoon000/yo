@@ -42,7 +42,7 @@ src/assets/stickers/
 ```text
 꼬집기.png -> cheek-pinch.png
 브이.png -> v-sign.png
-쓰담.png -> head-pat.png
+쓰담2.png -> head-pat.png
 볼하트.png -> hand-heart.png
 하이.png -> waving-hand.png
 볼콕.png -> cheek-poke.png

@@ -7,7 +7,7 @@ const stickerModules = import.meta.glob('../assets/stickers/*.png', {
 export const stickerDefinitions = [
   { id: 'cheek-pinch', label: '볼 꼬집기', fileName: 'cheek-pinch.png', sourceName: '꼬집기.png', width: 301, height: 435, emoji: '🤏' },
   { id: 'v-sign', label: '브이', fileName: 'v-sign.png', sourceName: '브이.png', width: 239, height: 470, emoji: '✌' },
-  { id: 'head-pat', label: '머리 쓰담', fileName: 'head-pat.png', sourceName: '쓰담.png', width: 382, height: 428, emoji: '🫳' },
+  { id: 'head-pat', label: '머리 쓰담', fileName: 'head-pat.png', sourceName: '쓰담2.png', width: 364, height: 436, emoji: '🫳' },
   { id: 'hand-heart', label: '손하트', fileName: 'hand-heart.png', sourceName: '볼하트.png', width: 319, height: 448, emoji: '♡' },
   { id: 'waving-hand', label: '손 흔들기', fileName: 'waving-hand.png', sourceName: '하이.png', width: 281, height: 456, emoji: '👋' },
   { id: 'cheek-poke', label: '볼 찌르기', fileName: 'cheek-poke.png', sourceName: '볼콕.png', width: 367, height: 389, emoji: '☝' },
