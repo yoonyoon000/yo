@@ -192,9 +192,13 @@ function StickerNode({ item, isSelected, onSelect, onChange }) {
     ref: shapeRef,
     x: item.x,
     y: item.y,
+    width: item.width,
+    height: item.height,
+    offsetX: item.width / 2,
+    offsetY: item.height / 2,
     draggable: true,
     rotation: item.rotation,
-    scaleX: item.scaleX * (item.flipped ? -1 : 1),
+    scaleX: item.scaleX,
     scaleY: item.scaleY,
     onClick: onSelect,
     onTap: onSelect,
@@ -205,7 +209,7 @@ function StickerNode({ item, isSelected, onSelect, onChange }) {
       const node = event.target;
       const nextScaleX = Math.abs(node.scaleX());
       const nextScaleY = Math.abs(node.scaleY());
-      node.scaleX(item.flipped ? -nextScaleX : nextScaleX);
+      node.scaleX(nextScaleX);
       node.scaleY(nextScaleY);
 
       onChange({
@@ -221,32 +225,36 @@ function StickerNode({ item, isSelected, onSelect, onChange }) {
 
   if (image) {
     return (
-      <KonvaImage
-        {...commonProps}
-        image={image}
-        width={item.width}
-        height={item.height}
-        offsetX={item.width / 2}
-        offsetY={item.height / 2}
-      />
+      <Group {...commonProps}>
+        <KonvaImage
+          image={image}
+          x={item.flipped ? item.width : 0}
+          y={0}
+          width={item.width}
+          height={item.height}
+          scaleX={item.flipped ? -1 : 1}
+        />
+      </Group>
     );
   }
 
   return (
-    <Group {...commonProps} width={item.width} height={item.height} offsetX={item.width / 2} offsetY={item.height / 2}>
-      <Rect
-        width={item.width}
-        height={item.height}
-        cornerRadius={24}
-        fill="#fff5f8"
-        stroke="#f5a3bb"
-        dash={[8, 6]}
-        shadowColor="#f6a9bd"
-        shadowBlur={12}
-        shadowOpacity={0.25}
-      />
-      <Text text={item.emoji} width={item.width} y={22} align="center" fontSize={36} />
-      <Text text={item.label} width={item.width} y={72} align="center" fontSize={16} fill="#a14d67" fontStyle="bold" />
+    <Group {...commonProps}>
+      <Group x={item.flipped ? item.width : 0} scaleX={item.flipped ? -1 : 1}>
+        <Rect
+          width={item.width}
+          height={item.height}
+          cornerRadius={24}
+          fill="#fff5f8"
+          stroke="#f5a3bb"
+          dash={[8, 6]}
+          shadowColor="#f6a9bd"
+          shadowBlur={12}
+          shadowOpacity={0.25}
+        />
+        <Text text={item.emoji} width={item.width} y={22} align="center" fontSize={36} />
+        <Text text={item.label} width={item.width} y={72} align="center" fontSize={16} fill="#a14d67" fontStyle="bold" />
+      </Group>
     </Group>
   );
 }
