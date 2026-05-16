@@ -205,6 +205,8 @@ function StickerNode({ item, isSelected, onSelect, onChange }) {
       const node = event.target;
       const nextScaleX = Math.abs(node.scaleX());
       const nextScaleY = Math.abs(node.scaleY());
+      node.scaleX(item.flipped ? -nextScaleX : nextScaleX);
+      node.scaleY(nextScaleY);
 
       onChange({
         ...item,
@@ -213,7 +215,6 @@ function StickerNode({ item, isSelected, onSelect, onChange }) {
         rotation: node.rotation(),
         scaleX: Math.max(nextScaleX, 0.2),
         scaleY: Math.max(nextScaleY, 0.2),
-        flipped: node.scaleX() < 0,
       });
     },
   };
@@ -264,13 +265,18 @@ function EffectNode({ item, onSelect, onChange }) {
     onDragEnd: (event) => onChange({ ...item, x: event.target.x(), y: event.target.y() }),
     onTransformEnd: (event) => {
       const node = event.target;
+      const nextScaleX = Math.abs(node.scaleX());
+      const nextScaleY = Math.abs(node.scaleY());
+      node.scaleX(nextScaleX);
+      node.scaleY(nextScaleY);
+
       onChange({
         ...item,
         x: node.x(),
         y: node.y(),
         rotation: node.rotation(),
-        scaleX: Math.max(node.scaleX(), 0.25),
-        scaleY: Math.max(node.scaleY(), 0.25),
+        scaleX: Math.max(nextScaleX, 0.25),
+        scaleY: Math.max(nextScaleY, 0.25),
       });
     },
   };
