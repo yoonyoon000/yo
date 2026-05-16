@@ -15,10 +15,11 @@
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
+  min-height: 100dvh;
   background:
     linear-gradient(180deg, rgba(255, 239, 244, 0.76), rgba(247, 244, 238, 0.5) 38%),
     #f7f4ee;
+  overscroll-behavior: none;
 }
 
 button,
@@ -31,7 +32,7 @@ button {
 }
 
 .app-shell {
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .upload-screen {
@@ -91,23 +92,25 @@ button {
 }
 
 .editor-screen {
-  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100dvh;
   max-width: 520px;
   margin: 0 auto;
-  padding: 10px;
+  padding: 8px 8px max(8px, env(safe-area-inset-bottom));
+  overflow: hidden;
 }
 
 .toolbar {
-  position: sticky;
-  top: 8px;
+  position: relative;
   z-index: 5;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
+  gap: 6px;
+  padding: 8px;
   border: 1px solid rgba(218, 171, 181, 0.48);
-  border-radius: 24px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(18px);
   box-shadow: 0 10px 26px rgba(101, 72, 80, 0.08);
@@ -118,7 +121,7 @@ button {
 .options {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
 }
 
 .toolbar-sliders {
@@ -132,20 +135,20 @@ button {
   align-items: center;
   gap: 8px;
   color: #6f5960;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
 .toolbar-sliders input {
   accent-color: #e87598;
-  inline-size: 78px;
+  inline-size: 92px;
 }
 
 .icon-button {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   color: #7d4c5d;
   background: #fff4f7;
@@ -167,7 +170,7 @@ button {
   gap: 6px;
   min-height: 38px;
   color: #6c545c;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   white-space: nowrap;
 }
@@ -177,99 +180,110 @@ button {
 }
 
 .save-button {
-  flex: 1 1 auto;
+  flex: 1 1 132px;
+  min-height: 40px;
+  padding: 0 14px;
   white-space: nowrap;
+  font-size: 14px;
 }
 
 .editor-layout {
   display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-  align-items: start;
-  margin-top: 10px;
+  gap: 8px;
+  min-height: 0;
+  margin-top: 8px;
 }
 
 .canvas-wrap {
   display: grid;
   place-items: center;
-  min-height: auto;
-  padding: 4px;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .canvas-card {
-  overflow: auto;
+  overflow: hidden;
   max-width: 100%;
-  padding: 14px;
+  max-height: 100%;
+  padding: 6px;
   border: 1px solid rgba(217, 186, 170, 0.56);
-  border-radius: 28px;
+  border-radius: 18px;
   background:
     linear-gradient(45deg, rgba(250, 222, 229, 0.35) 25%, transparent 25%),
     linear-gradient(-45deg, rgba(250, 222, 229, 0.35) 25%, transparent 25%),
     #fffdf9;
   background-size: 24px 24px;
-  box-shadow: 0 18px 46px rgba(81, 62, 66, 0.12);
+  box-shadow: 0 10px 24px rgba(81, 62, 66, 0.1);
 }
 
 .konvajs-content {
-  border-radius: 18px;
+  max-width: 100%;
+  border-radius: 14px;
   overflow: hidden;
 }
 
 .sticker-panel {
   display: grid;
-  gap: 10px;
-  position: sticky;
-  bottom: 0;
+  grid-template-rows: auto auto;
+  gap: 8px;
+  min-height: 0;
   z-index: 4;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: 0;
 }
 
 .panel-section {
-  padding: 12px;
+  min-width: 0;
+  padding: 10px;
   border: 1px solid rgba(218, 171, 181, 0.55);
-  border-radius: 24px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 12px 24px rgba(101, 72, 80, 0.07);
+  box-shadow: 0 8px 18px rgba(101, 72, 80, 0.06);
 }
 
 .panel-section h2 {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   color: #5f414c;
-  font-size: 16px;
+  font-size: 13px;
 }
 
 .sticker-grid {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 88px;
-  grid-template-columns: none;
-  gap: 10px;
+  display: flex;
+  gap: 8px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  overflow-y: hidden;
+  width: 100%;
+  padding: 0 4px 8px 0;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
+  touch-action: pan-x;
 }
 
 .sticker-tile {
+  flex: 0 0 76px;
   display: grid;
   place-items: center;
-  min-height: 96px;
-  padding: 10px 8px;
+  min-height: 82px;
+  padding: 7px 5px;
   border: 1px solid rgba(226, 151, 174, 0.42);
   border-radius: 18px;
   color: #684854;
   background: #fff8fa;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   scroll-snap-align: start;
 }
 
 .sticker-tile img {
-  width: 54px;
-  height: 54px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
   mix-blend-mode: multiply;
+  pointer-events: none;
 }
 
 .sticker-placeholder {
@@ -287,76 +301,74 @@ button {
 .effect-buttons {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
+  gap: 7px;
 }
 
 .effect-buttons button {
-  min-height: 42px;
+  min-height: 34px;
   border-radius: 999px;
   color: #7f4e5d;
   background: #fff2f6;
   cursor: pointer;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 @media (min-width: 760px) {
   .editor-screen {
     max-width: 620px;
-    padding: 16px;
-  }
-
-  .sticker-grid {
-    grid-auto-columns: 104px;
+    padding: 12px;
   }
 
   .sticker-tile {
-    min-height: 108px;
+    flex-basis: 96px;
+    min-height: 98px;
   }
 
   .sticker-tile img {
-    width: 64px;
-    height: 64px;
+    width: 62px;
+    height: 62px;
+  }
+}
+
+@media (max-width: 380px) {
+  .toolbar {
+    gap: 5px;
+  }
+
+  .icon-button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .save-button {
+    min-height: 38px;
+    font-size: 13px;
+  }
+
+  .sticker-tile {
+    flex-basis: 70px;
   }
 }
 
 @media (max-width: 520px) {
-  .upload-screen {
-    padding: 20px;
-  }
-
-  .upload-screen h1 {
-    font-size: 46px;
-  }
-
-  .upload-screen p {
-    font-size: 16px;
-  }
-
   .toolbar-group,
   .options {
     flex-wrap: wrap;
   }
 
-  .save-button {
-    width: 100%;
-  }
-
-  .canvas-card {
-    padding: 8px;
-    border-radius: 20px;
-  }
-
   .toolbar-sliders {
-    align-items: stretch;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
   }
 
   .toolbar-sliders label {
-    justify-content: space-between;
+    flex: 1 1 0;
+    justify-content: center;
   }
 
   .toolbar-sliders input {
-    inline-size: 65%;
+    min-width: 0;
+    inline-size: 70px;
   }
 }

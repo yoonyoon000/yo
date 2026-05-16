@@ -5,18 +5,32 @@ import StickerPanel from './StickerPanel.jsx';
 import Toolbar from './Toolbar.jsx';
 
 const MAX_CANVAS_WIDTH = 820;
-const MAX_CANVAS_HEIGHT = 760;
+const TOOLBAR_HEIGHT = 150;
+const STICKER_TRAY_HEIGHT = 250;
 
-function useViewportWidth() {
-  const [width, setWidth] = useState(() => window.innerWidth);
+function useViewportSize() {
+  const [size, setSize] = useState(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }));
 
   useEffect(() => {
-    const handleResize = () => setWidth(window.innerWidth);
+    const handleResize = () => {
+      setSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.visualViewport?.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('resize', handleResize);
+    };
   }, []);
 
-  return width;
+  return size;
 }
 
 function useLoadedImage(src) {
@@ -252,7 +266,7 @@ function EffectNode({ item, onSelect, onChange }) {
 export default function Editor({ imageFile, onChangeImage }) {
   const stageRef = useRef(null);
   const transformerRef = useRef(null);
-  const viewportWidth = useViewportWidth();
+  const viewportSize = useViewportSize();
   const imageUrl = useMemo(() => URL.createObjectURL(imageFile), [imageFile]);
   const uploadedImage = useLoadedImage(imageUrl);
   const [items, setItems] = useState([]);
@@ -260,22 +274,21 @@ export default function Editor({ imageFile, onChangeImage }) {
   const [selectedId, setSelectedId] = useState(null);
   const [brightness, setBrightness] = useState(100);
   const [blur, setBlur] = useState(0);
-  const [includeStoryRatio, setIncludeStoryRatio] = useState(false);
   const [includeWatermark, setIncludeWatermark] = useState(true);
 
   useEffect(() => () => URL.revokeObjectURL(imageUrl), [imageUrl]);
 
   const canvasSize = useMemo(() => {
     if (!uploadedImage) return { width: 640, height: 480 };
-    // 모바일 작업 폭을 기준으로 사진 비율을 유지하며 자동 축소한다.
-    const availableWidth = Math.min(viewportWidth - 52, viewportWidth >= 760 ? 572 : 480);
-    const maxWidth = Math.min(MAX_CANVAS_WIDTH, Math.max(300, availableWidth));
-    const ratio = Math.min(maxWidth / uploadedImage.width, MAX_CANVAS_HEIGHT / uploadedImage.height, 1);
+    // 휴대폰 한 화면에 사진 전체가 들어오도록 가로/세로 여유를 함께 계산한다.
+    const availableWidth = Math.min(viewportSize.width - 28, MAX_CANVAS_WIDTH);
+    const availableHeight = Math.max(220, viewportSize.height - TOOLBAR_HEIGHT - STICKER_TRAY_HEIGHT);
+    const ratio = Math.min(availableWidth / uploadedImage.width, availableHeight / uploadedImage.height, 1);
     return {
       width: Math.round(uploadedImage.width * ratio),
       height: Math.round(uploadedImage.height * ratio),
     };
-  }, [uploadedImage, viewportWidth]);
+  }, [uploadedImage, viewportSize.height, viewportSize.width]);
 
   const selectedItem = items.find((item) => item.id === selectedId);
 
@@ -425,7 +438,7 @@ export default function Editor({ imageFile, onChangeImage }) {
     if (!stage) return;
     const rawUrl = stage.toDataURL({ pixelRatio: 2, mimeType: 'image/png' });
 
-    if (!includeStoryRatio && !includeWatermark) {
+    if (!includeWatermark) {
       downloadDataUrl(rawUrl, 'sseudam-photobooth.png');
       return;
     }
@@ -434,20 +447,14 @@ export default function Editor({ imageFile, onChangeImage }) {
     exportImage.onload = () => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
-      const width = includeStoryRatio ? 1080 : exportImage.width;
-      const height = includeStoryRatio ? 1920 : exportImage.height;
+      const width = exportImage.width;
+      const height = exportImage.height;
       canvas.width = width;
       canvas.height = height;
       context.fillStyle = '#f8f4ef';
       context.fillRect(0, 0, width, height);
 
-      const ratio = Math.min((width - 96) / exportImage.width, (height - 180) / exportImage.height, 1);
-      const drawWidth = exportImage.width * ratio;
-      const drawHeight = exportImage.height * ratio;
-      const x = (width - drawWidth) / 2;
-      const y = (height - drawHeight) / 2;
-
-      context.drawImage(exportImage, x, y, drawWidth, drawHeight);
+      context.drawImage(exportImage, 0, 0);
       drawWatermark(context, width, height);
       downloadDataUrl(canvas.toDataURL('image/png'), 'sseudam-photobooth.png');
     };
@@ -458,7 +465,6 @@ export default function Editor({ imageFile, onChangeImage }) {
     <section className="editor-screen">
       <Toolbar
         canEditSelected={Boolean(selectedItem)}
-        includeStoryRatio={includeStoryRatio}
         includeWatermark={includeWatermark}
         imageBlur={blur}
         imageBrightness={brightness}
@@ -471,7 +477,6 @@ export default function Editor({ imageFile, onChangeImage }) {
         onDownload={downloadImage}
         onFlip={flipSelected}
         onForwardLayer={() => moveSelectedLayer('forward')}
-        onToggleStoryRatio={() => setIncludeStoryRatio((prev) => !prev)}
         onToggleWatermark={() => setIncludeWatermark((prev) => !prev)}
         onUndo={undo}
       />

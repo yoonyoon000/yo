@@ -1,6 +1,5 @@
 import {
   ArrowDownToLine,
-  ArrowLeft,
   ArrowUpToLine,
   Download,
   FlipHorizontal,
@@ -12,7 +11,6 @@ import {
 
 export default function Toolbar({
   canEditSelected,
-  includeStoryRatio,
   includeWatermark,
   imageBlur,
   imageBrightness,
@@ -25,7 +23,6 @@ export default function Toolbar({
   onDownload,
   onFlip,
   onForwardLayer,
-  onToggleStoryRatio,
   onToggleWatermark,
   onUndo,
 }) {
@@ -82,10 +79,6 @@ export default function Toolbar({
       </div>
 
       <div className="toolbar-group options">
-        <label className="check-control">
-          <input type="checkbox" checked={includeStoryRatio} onChange={onToggleStoryRatio} />
-          스토리 비율
-        </label>
         <label className="check-control">
           <input type="checkbox" checked={includeWatermark} onChange={onToggleWatermark} />
           날짜/로고
