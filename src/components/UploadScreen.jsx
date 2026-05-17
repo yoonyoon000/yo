@@ -9,9 +9,8 @@ export default function UploadScreen({ onImageUpload }) {
 
   return (
     <section className="upload-screen">
-      <div className="brand-mark">Sseudam</div>
-      <h1>쓰담 포토부스</h1>
-      <p>사진 위에 손 스티커를 얹어 나만의 최애 포토카드를 만들어보세요.</p>
+      <h1>너에게 닿기를</h1>
+      <p>모니터 속 너에게 닿기를</p>
       <label className="upload-button">
         <ImagePlus size={20} />
         이미지 업로드
